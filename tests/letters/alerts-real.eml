@@ -1,0 +1,29 @@
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@google.com header.s=20230601 header.b=abc;
+       spf=pass smtp.mailfrom=3abc@alerts.bounces.google.com;
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=google.com
+From: Google Alerts <googlealerts-noreply@google.com>
+To: person@example.com
+Subject: =?UTF-8?B?R29vZ2xlINCe0L/QvtCy0LXRidC10L3QuNC1IC0gItCQ0L3QvdCwINCf0LXRgtGA0L7QstCwIg==?=
+Date: Wed, 30 Sep 2026 07:02:11 +0000
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="b1"
+
+--b1
+Content-Type: text/plain; charset=UTF-8
+
+Anna Petrova opens a bakery
+<https://www.google.com/url?rct=j&sa=t&url=https://citynews.example.org/bakery%3Futm_source%3Dalerts&ct=ga>
+
+--b1
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+<html><body><table><tr><td>
+<a href=3D"https://www.google.com/url?rct=3Dj&amp;sa=3Dt&amp;url=3Dhttps://citynews.example.org/bakery%3Futm_source%3Dalerts%26id%3D7&amp;ct=3Dga&amp;usg=3DAOv">Anna <b>Petrova</b> opens a bakery on Main Street</a>
+<a href=3D"https://www.google.com/url?rct=3Dj&amp;sa=3Dt&amp;url=3Dhttps://blog.example.net/2026/09/review&amp;ct=3Dga">A review that mentions &quot;Anna Petrova&quot;</a>
+<a href=3D"https://www.google.com/alerts/remove?source=3Dalertsmail&amp;s=3Dx">Unsubscribe</a>
+<a href=3D"https://www.google.com/alerts?source=3Dalertsmail">Manage alerts</a>
+<a href=3D"javascript:alert(1)">bad</a>
+</td></tr></table></body></html>
+--b1--

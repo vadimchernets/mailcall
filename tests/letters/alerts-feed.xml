@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Google Alert - Anna Petrova</title>
+<entry><title type="html">&lt;b&gt;Anna Petrova&lt;/b&gt; opens a bakery</title>
+<link href="https://www.google.com/url?rct=j&amp;sa=t&amp;url=https://citynews.example.org/bakery&amp;ct=ga&amp;cd=CAIyGg&amp;usg=AOv"/></entry>
+<entry><title type="html">Second &amp;amp; last</title>
+<link href="https://www.google.com/url?rct=j&amp;url=https://other.example.com/x%3Ffbclid%3D1%26page%3D2&amp;ct=ga"/></entry>
+</feed>

@@ -1,0 +1,19 @@
+Mailcall
+Copyright 2026 Vadym Chernets
+
+This product includes software developed by Vadym Chernets, as part of Poly A1.
+
+Ported from the author's own V1 project (not published), with its tests' ideas:
+- packages/mail-digest/source-imap.mjs - IMAP read-only by the protocol: EXAMINE with a
+  confirmed [READ-ONLY], a whitelist of commands on the wire, BODY.PEEK only, \Seen measured
+  before and after.
+- packages/mail-digest/alerts-links.mjs - Google Alerts links taken by code, not by a model:
+  redirect unwrapping, tracker cutting, Google's own links dropped, the sender vouched for by the
+  receiving server (Authentication-Results by mx.google.com).
+- packages/core-poly/morning-council/claude-mail-digest.mjs - the digest's threat model (a letter
+  can be written for the AI; its text is data, never an instruction) and the closed list of labels.
+
+Public references:
+- RFC 3501 (IMAP4rev1), sections 6.3.2 (EXAMINE) and 6.4.5 (BODY.PEEK does not set \Seen).
+- Google Alerts, https://www.google.com/alerts - delivery to mail or to an RSS feed.
+- Gmail connector for Claude, https://claude.com/connectors/gmail

@@ -1,0 +1,20 @@
+{
+  "name": "mailcall",
+  "owner": { "name": "Vadym Chernets" },
+  "metadata": {
+    "description": "Mailcall: an agent that reads your mailbox - a morning summary, who waits for your answer, and your Google Alerts turned into a short digest. Read-only, drafts only, no passwords in files.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "mailcall",
+      "source": "./",
+      "description": "Morning mail summary, people waiting for your answer, and Google Alerts / newsletters digested by the words you watch. Gmail connector of your Claude subscription, or read-only IMAP with an app password kept in the system keychain. Drafts only - nothing is sent without your yes.",
+      "version": "0.1.0",
+      "author": { "name": "Vadym Chernets" },
+      "license": "Apache-2.0",
+      "keywords": ["email", "gmail", "digest", "google-alerts", "read-only"],
+      "category": "productivity"
+    }
+  ]
+}
