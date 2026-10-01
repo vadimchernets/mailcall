@@ -14,6 +14,11 @@ This script is the spare road and the careful hands:
   alerts [--eml F ...]       Google Alerts letters -> news items with the REAL links, taken by code
   feed   --url URL | --file  a Google Alerts RSS/Atom feed -> the same items (no mail at all)
   unwrap                     stdin text -> every google.com/url?... link unwrapped, trackers cut
+  letter [--file F ...]      the connector road: a letter exactly as the Gmail tool returned it
+                             (raw RFC 822, Gmail API JSON with payload.headers / raw, or plain text)
+                             -> sender checked by Authentication-Results like on IMAP; links and
+                             Alerts items only from letters whose sender is confirmed; a letter
+                             with no headers is "не проверено" and gives no links
   words  list|add|remove     the person's "words to watch", kept in ~/.mailcall/watch.json
   config show|set            ~/.mailcall/config.json: address, server, road (connector|imap)
 
@@ -27,6 +32,7 @@ packages/mail-digest/source-imap.mjs):
 """
 
 import argparse
+import base64
 import ctypes
 import datetime as dt
 import email
@@ -315,6 +321,158 @@ def auth_verdict(msg):
     return "unsigned"
 
 
+def sender_verdict(msg):
+    """Any sender, the same rule as for Alerts: the top Authentication-Results, written by Gmail's own
+    mx.google.com, says dmarc=pass for the From domain, or dkim=pass for that domain.
+    pass | fail (headers there, no pass: looks forged) | unverified (no headers to check)."""
+    ar = msg.get_all("Authentication-Results") or []
+    if not ar:
+        # the full header set is there (Gmail always writes Received and its verdict) but no verdict:
+        # Gmail did not vouch for this sender. Only a body or From/Subject: nothing to check.
+        return "fail" if (msg.get("Received") or msg.get("Message-ID")) else "unverified"
+    top = re.sub(r"\s+", " ", str(ar[0])).strip().lower()
+    if not top.startswith("mx.google.com"):
+        return "fail"
+    dom = email.utils.parseaddr(str(msg.get("From", "")))[1].lower().rpartition("@")[2]
+    if not dom:
+        return "fail"
+    for m in re.finditer(r"dmarc=pass[^;]*header\.from=([a-z0-9.-]+)", top):
+        if m.group(1) == dom:
+            return "pass"
+    for m in re.finditer(r"dkim=pass[^;]*header\.(?:i=[^ ;]*@|d=)([a-z0-9.-]+)", top):
+        d = m.group(1)
+        if dom == d or dom.endswith("." + d):
+            return "pass"
+    return "fail"
+
+
+def body_links(plain, rich):
+    found = []
+    for href in re.findall(r"""(?i)\bhref\s*=\s*(?:"([^"]*)"|'([^']*)')""", rich or ""):
+        found += unwrap_text(href[0] or href[1])
+    found += unwrap_text(html.unescape(plain or "")) + unwrap_text(html.unescape(html_to_text(rich or "")))
+    out_ = []
+    for u in found:
+        if u not in out_:
+            out_.append(u)
+    return out_[:MAX_ITEMS]
+
+
+SAY = {"pass": "отправитель подтверждён", "fail": "Похоже на обман: отправитель не подтверждён",
+       "unverified": "не проверено: коннектор не отдал заголовки, ссылки не берём"}
+
+
+def check_letter(raw, uid=None):
+    """The connector road, the same hands as IMAP: who really sent it, and links only from code."""
+    msg = email.message_from_bytes(raw if isinstance(raw, bytes) else raw.encode("utf-8"), policy=email.policy.default)
+    d = describe(raw, uid=uid)
+    verdict = sender_verdict(msg)
+    if d["google_alerts"] and verdict != "unverified":
+        verdict = "pass" if auth_verdict(msg) == "pass" else "fail"
+    if d["google_alerts"]:
+        d["alerts_auth"] = {"pass": "pass", "fail": "unsigned", "unverified": "unverified"}[verdict]
+        if verdict != "pass":
+            d["alerts_items"] = []
+    plain, rich = parts(msg)
+    rec = [str(r) for r in (msg.get_all("Received") or [])]
+    d.update({"sender_auth": verdict, "say": SAY[verdict],
+              "received_by_google": bool(rec) and "google.com" in re.sub(r"\s+", " ", rec[0]).lower(),
+              "links": body_links(plain, rich) if verdict == "pass" else []})
+    return d
+
+
+def _b64url(data):
+    data = re.sub(r"\s+", "", data or "")
+    return base64.urlsafe_b64decode(data + "=" * (-len(data) % 4))
+
+
+def _gmail_json_to_raw(obj):
+    """A message object as a Gmail tool may give it -> RFC 822 bytes. None if it is not a message."""
+    if not isinstance(obj, dict):
+        return None
+    for k in ("raw", "rawMessage", "raw_message"):
+        if isinstance(obj.get(k), str) and obj[k].strip():
+            v = obj[k]
+            try:
+                b = _b64url(v)
+                if re.match(rb"^[\x21-\x39\x3b-\x7e]+:", b):
+                    return b
+            except Exception:
+                pass
+            return v.encode("utf-8")
+    payload = obj.get("payload") if isinstance(obj.get("payload"), dict) else obj
+    hdrs = payload.get("headers") or obj.get("headers") or []
+    if isinstance(hdrs, dict):
+        hdrs = [{"name": k, "value": v} for k, vals in hdrs.items() for v in (vals if isinstance(vals, list) else [vals])]
+    pairs = [(h.get("name"), h.get("value")) for h in hdrs if isinstance(h, dict) and h.get("name")]
+    names = {n.lower() for n, _ in pairs}
+    for k in ("from", "to", "subject", "date"):
+        if k not in names and isinstance(obj.get(k), str):
+            pairs.append((k.capitalize(), obj[k]))
+    texts = {"text/html": [], "text/plain": []}
+
+    def walk(p):
+        if not isinstance(p, dict):
+            return
+        mt = (p.get("mimeType") or p.get("mime_type") or "").lower()
+        data = (p.get("body") or {}).get("data") if isinstance(p.get("body"), dict) else None
+        if data and mt in texts:
+            try:
+                texts[mt].append(_b64url(data).decode("utf-8", "replace"))
+            except Exception:
+                pass
+        for c in p.get("parts") or []:
+            walk(c)
+    walk(payload)
+    for k, mt in (("html", "text/html"), ("htmlBody", "text/html"), ("body_html", "text/html"),
+                  ("body", "text/plain"), ("text", "text/plain"), ("plaintext", "text/plain"),
+                  ("content", "text/plain"), ("snippet", "text/plain")):
+        if isinstance(obj.get(k), str) and not texts[mt]:
+            texts[mt].append(obj[k])
+    if not pairs and not texts["text/html"] and not texts["text/plain"]:
+        return None
+    rich, plain = "\n".join(texts["text/html"]), "\n".join(texts["text/plain"])
+    if not texts["text/html"] and re.search(r"(?i)<(html|a|table|div|p)\b", plain):
+        rich, plain = plain, ""
+    keep = [(n, v) for n, v in pairs if n.lower() not in ("content-type", "content-transfer-encoding", "mime-version")]
+    head = "".join("%s: %s\r\n" % (n, re.sub(r"[\r\n]+", " ", str(v))) for n, v in keep)
+    if rich and plain:
+        b = "mailcallpart"
+        body = (f"MIME-Version: 1.0\r\nContent-Type: multipart/alternative; boundary=\"{b}\"\r\n\r\n"
+                f"--{b}\r\nContent-Type: text/plain; charset=utf-8\r\n\r\n{plain}\r\n"
+                f"--{b}\r\nContent-Type: text/html; charset=utf-8\r\n\r\n{rich}\r\n--{b}--\r\n")
+    else:
+        ct = "text/html" if rich else "text/plain"
+        body = f"MIME-Version: 1.0\r\nContent-Type: {ct}; charset=utf-8\r\n\r\n{rich or plain}"
+    return (head + body).encode("utf-8")
+
+
+def letters_from_text(text):
+    """What the connector tool returned -> a list of RFC 822 letters (bytes)."""
+    t = (text or "").lstrip("\ufeff")
+    try:
+        obj = json.loads(t)
+    except ValueError:
+        obj = None
+    if obj is not None:
+        found = []
+
+        def walk(o):
+            r = _gmail_json_to_raw(o) if isinstance(o, dict) and (
+                "payload" in o or "raw" in o or "headers" in o or "from" in o or "rawMessage" in o) else None
+            if r:
+                found.append(r)
+                return
+            for v in (o.values() if isinstance(o, dict) else o if isinstance(o, list) else []):
+                walk(v)
+        walk(obj)
+        return found
+    if re.match(r"^[\x21-\x39\x3b-\x7e]+:", t):
+        return [t.encode("utf-8")]          # raw RFC 822 source
+    # only the body text: no headers to check; the letter is "не проверено"
+    return [("Content-Type: text/plain; charset=utf-8\r\n\r\n" + t).encode("utf-8")] if t.strip() else []
+
+
 def describe(raw, uid=None, unread=None):
     msg = email.message_from_bytes(raw if isinstance(raw, bytes) else raw.encode("utf-8"), policy=email.policy.default)
     frm = email.utils.parseaddr(str(msg.get("From", "")))
@@ -556,6 +714,21 @@ def cmd_unwrap(a):
     return 0
 
 
+def cmd_letter(a):
+    res = []
+    sources = [(f, open(f, encoding="utf-8", errors="replace").read()) for f in (a.file or [])] or [
+        (None, sys.stdin.read())]
+    for name, text in sources:
+        for i, raw in enumerate(letters_from_text(text)):
+            uid = (os.path.basename(name) if name else "stdin") + (f"#{i + 1}" if i else "")
+            res.append(check_letter(raw, uid=uid))
+    out({"ok": True, "letters": res,
+         "confirmed": sum(1 for d in res if d["sender_auth"] == "pass"),
+         "looks_forged": sum(1 for d in res if d["sender_auth"] == "fail"),
+         "not_checked": sum(1 for d in res if d["sender_auth"] == "unverified")})
+    return 0
+
+
 def cmd_words(a):
     w = load("watch.json", {"words": []})
     words = w.get("words", [])
@@ -604,6 +777,7 @@ def main(argv=None):
     s = sub.add_parser("alerts"); s.add_argument("--eml", nargs="*"); s.set_defaults(f=cmd_alerts)
     s = sub.add_parser("feed"); s.add_argument("--url"); s.add_argument("--file"); s.set_defaults(f=cmd_feed)
     s = sub.add_parser("unwrap"); s.set_defaults(f=cmd_unwrap)
+    s = sub.add_parser("letter"); s.add_argument("--file", nargs="*"); s.set_defaults(f=cmd_letter)
     s = sub.add_parser("words"); s.add_argument("action", choices=["list", "add", "remove"])
     s.add_argument("word", nargs="*"); s.set_defaults(f=cmd_words)
     s = sub.add_parser("config"); s.add_argument("action", choices=["show", "set"])

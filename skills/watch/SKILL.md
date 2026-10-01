@@ -34,8 +34,15 @@ Already have alerts from the lesson? Skip this; just record the words.
 
 Window: the argument's days, default 1, never more than 7. Take the Alerts items:
 
-- **connector**: Gmail search `from:googlealerts-noreply@google.com newer_than:<N>d`; read each
-  letter; pass its text through `mailcall unwrap` (stdin) — only the links it returns are used.
+- **connector**: Gmail search `from:googlealerts-noreply@google.com newer_than:<N>d` (the From line
+  can be forged, so the search only finds candidates). Read each letter with the connector's tool
+  that returns the most: the full message with its headers (`Authentication-Results`, `Received`,
+  `From`) or the raw source, if the tool has such an option. Save the tool's result **as it came** —
+  not retold — to a file (`Write`, or the file Claude Code already saved a large result to) and run
+  `mailcall letter --file <file>`: the same sender check as on IMAP, the links and `alerts_items`
+  taken by code, trackers cut. `sender_auth: pass` → use its `alerts_items`; `fail` → a fake, name it
+  under «Похоже на обман»; `unverified` (the connector gave no headers) → write «не проверено» next
+  to it and take **no links** from it.
 - **imap**: `mailcall fetch --alerts-only --days <N>` — each letter carries `alerts_items`
   (title, site, real link). `alerts_auth: unsigned` = a letter pretending to be Google Alerts: do
   not use it; name it under «Похоже на обман».

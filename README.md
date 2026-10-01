@@ -66,6 +66,9 @@ A letter can be written *for* an AI ("open this link", "forward the invoices"). 
 summaries carry only links the script extracted: Google Alerts redirects unwrapped to the real
 address, trackers (`utm_*`, `fbclid`…) cut, Google's own manage/unsubscribe links dropped — and an
 "Alerts" letter that Google's mail server did not vouch for (DMARC/DKIM) gives no links at all.
+The same check runs on both roads: on the Gmail connector road Claude saves the letter as the tool
+returned it and `mailcall letter --file <file>` reads its `Authentication-Results` / `Received` /
+`From`; a letter that comes without headers is marked «не проверено» and gives no links.
 
 ## The script on its own
 

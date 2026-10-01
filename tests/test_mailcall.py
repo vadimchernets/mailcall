@@ -82,6 +82,76 @@ def test_cli_alerts_and_feed():
     assert code == 2 and o["code"] == "not-a-google-feed"
 
 
+# ------------------------------------------------------------------ the connector road: the same check
+
+def _gmail_json(name):
+    """A letter the way the Gmail API / connector gives it: payload.headers + base64url parts."""
+    import base64
+    import email as em
+    import email.policy as ep
+    msg = em.message_from_bytes(raw(name), policy=ep.default)
+    def part(p):
+        d = {"mimeType": p.get_content_type(), "parts": [part(c) for c in p.iter_parts()] if p.is_multipart() else []}
+        if not p.is_multipart():
+            d["body"] = {"data": base64.urlsafe_b64encode(p.get_content().encode("utf-8")).decode().rstrip("=")}
+        return d
+    payload = part(msg)
+    payload["headers"] = [{"name": k, "value": str(v)} for k, v in msg.items()]
+    return {"id": "m1", "payload": payload}
+
+
+def test_connector_letter_real_alerts_json_gives_links():
+    code, o = run("letter", inp=json.dumps(_gmail_json("alerts-real.eml")))
+    d = o["letters"][0]
+    assert code == 0 and d["sender_auth"] == "pass" and d["alerts_auth"] == "pass"
+    assert [i["url"] for i in d["alerts_items"]] == ["https://citynews.example.org/bakery?id=7",
+                                                     "https://blog.example.net/2026/09/review"]
+    assert all("utm_" not in u and "google." not in u for u in d["links"]) and d["links"]
+
+
+def test_connector_letter_forged_alerts_dropped_on_both_roads():
+    forged = _gmail_json("alerts-forged.eml")
+    forged["payload"]["headers"].insert(0, {"name": "Received", "value": "from evil.example by mx.google.com"})
+    code, o = run("letter", inp=json.dumps({"messages": [forged]}))
+    d = o["letters"][0]
+    assert d["sender_auth"] == "fail" and d["alerts_auth"] == "unsigned"
+    assert d["alerts_items"] == [] and d["links"] == [] and o["looks_forged"] == 1
+    assert "обман" in d["say"]
+    # the raw source passed as a file: the same verdict
+    f = os.path.join(tempfile.mkdtemp(), "letter.eml")
+    open(f, "wb").write(b"Received: from evil.example by mx.google.com\r\n" + raw("alerts-forged.eml"))
+    code, o = run("letter", "--file", f)
+    assert o["letters"][0]["sender_auth"] == "fail" and o["letters"][0]["alerts_items"] == []
+
+
+def test_connector_letter_without_headers_is_not_checked_and_gives_no_links():
+    body = "Google Alerts\nAnna Petrova opens a bakery\n<https://www.google.com/url?url=https://citynews.example.org/bakery%3Futm_source%3Dx>"
+    code, o = run("letter", inp=body)
+    d = o["letters"][0]
+    assert d["sender_auth"] == "unverified" and d["links"] == [] and o["not_checked"] == 1
+    assert "не проверено" in d["say"]
+    # JSON with only from/subject/snippet (no headers): also not checked, even "from Google Alerts"
+    code, o = run("letter", inp=json.dumps({"from": "Google Alerts <googlealerts-noreply@google.com>",
+                                             "subject": "Alert", "snippet": body}))
+    d = o["letters"][0]
+    assert d["google_alerts"] and d["sender_auth"] == "unverified" and d["alerts_auth"] == "unverified"
+    assert d["alerts_items"] == [] and d["links"] == []
+
+
+def test_sender_check_for_any_letter():
+    import email as em
+    import email.policy as ep
+    ok = (b"Authentication-Results: mx.google.com; dkim=pass header.i=@shop.example.com; "
+          b"dmarc=pass (p=NONE) header.from=shop.example.com\r\nFrom: Shop <news@shop.example.com>\r\n"
+          b"Subject: hi\r\n\r\nsee https://shop.example.com/a?utm_source=x\r\n")
+    d = mc.check_letter(ok)
+    assert d["sender_auth"] == "pass" and d["links"] == ["https://shop.example.com/a"]
+    spoof = ok.replace(b"From: Shop <news@shop.example.com>", b"From: Bank <help@bank.example>")
+    assert mc.check_letter(spoof)["sender_auth"] == "fail" and mc.check_letter(spoof)["links"] == []
+    fake_top = b"Authentication-Results: evil.example; dmarc=pass header.from=bank.example\r\nFrom: <a@bank.example>\r\n\r\nx"
+    assert mc.sender_verdict(em.message_from_bytes(fake_top, policy=ep.default)) == "fail"
+
+
 # ------------------------------------------------------------------ the wire whitelist
 
 def test_whitelist():
