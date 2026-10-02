@@ -2,7 +2,7 @@
 name: watch
 description: Words to watch - the person names what they want to know about (their name, their business, a competitor, a topic), Mailcall helps set up Google Alerts for each word (the person creates them, delivered to their mail or to a feed), then reads the Alerts letters and writes a short digest per word - the few real new mentions with titles, sites and real links taken by code, repeats and noise removed. Use when the person says "watch these words", "digest my alerts", "what are people saying about me" (or the equivalent in whatever language they are using), or after creating Google Alerts in the lesson.
 argument-hint: "[add <words> | list | remove <word> | digest [days]]"
-allowed-tools: Bash(sh "${CLAUDE_PLUGIN_ROOT}/hooks/python.sh" mailcall say scripts/*) PowerShell(& "${CLAUDE_PLUGIN_ROOT}/hooks/python.ps1" mailcall say scripts/*) Bash(date*) ToolSearch Read Write
+allowed-tools: Bash(sh "${CLAUDE_PLUGIN_ROOT}/hooks/python.sh" mailcall say scripts/*) PowerShell(${CLAUDE_PLUGIN_ROOT}/hooks/python.ps1 mailcall say scripts/*) Bash(date*) ToolSearch Read Write
 ---
 
 # Mailcall: words to watch
@@ -11,9 +11,11 @@ allowed-tools: Bash(sh "${CLAUDE_PLUGIN_ROOT}/hooks/python.sh" mailcall say scri
 
 Every script command on this page is written for the **Bash** tool and starts with
 `sh "${CLAUDE_PLUGIN_ROOT}/hooks/python.sh" mailcall say scripts/…`. If your shell tool is **PowerShell** (Windows
-without Git Bash), run the same command with only its start changed: `& "${CLAUDE_PLUGIN_ROOT}/hooks/python.ps1"`
-in place of `sh "${CLAUDE_PLUGIN_ROOT}/hooks/python.sh"`, everything after it unchanged, on one line; text for
-standard input goes in as `@'…'@ | & "${CLAUDE_PLUGIN_ROOT}/hooks/python.ps1" …` instead of `<<'EOF'`.
+without Git Bash), only the start changes: write the launcher's path bare, with no quotes and no `&`
+— `${CLAUDE_PLUGIN_ROOT}/hooks/python.ps1 mailcall say scripts/…` — and keep the rest, on one line; that is the
+form this skill's permission covers. Only if that path has a space in it, write
+`& "${CLAUDE_PLUGIN_ROOT}/hooks/python.ps1" …` instead (the person is then asked once). Text for standard input:
+`@'…'@ | ${CLAUDE_PLUGIN_ROOT}/hooks/python.ps1 …` (`| & "…"` if the path has a space) instead of `<<'EOF'` — also asked once.
 Never call `python3`, `python` or `py` yourself: the launcher finds a real Python 3.8+ (`python`,
 then `py -3`, then `python3`) and never starts the Microsoft Store or Apple stub. If it answers
 with one line saying mailcall "is paused" because this computer has no working Python 3 yet, tell the

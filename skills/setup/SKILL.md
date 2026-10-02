@@ -2,7 +2,7 @@
 name: setup
 description: Connect the person's mailbox to Claude and prove it works - the Gmail connector of their Claude subscription first (no password anywhere), or, for any other mailbox or when the connector is not there, read-only IMAP with an app password the person types themselves into the system keychain (Keychain on Mac, Credential Manager on Windows, Secret Service on Linux). Ends by showing, in one line, what Claude now really sees, and how to take the access back. Use when the person says "connect my email", "read my inbox", "set up mailcall" (or the equivalent in whatever language they are using), or before the first /mailcall:digest or /mailcall:watch.
 argument-hint: "[your mailbox address]"
-allowed-tools: Bash(sh "${CLAUDE_PLUGIN_ROOT}/hooks/python.sh" mailcall say scripts/*) PowerShell(& "${CLAUDE_PLUGIN_ROOT}/hooks/python.ps1" mailcall say scripts/*) Bash(date*) ToolSearch Read Write
+allowed-tools: Bash(sh "${CLAUDE_PLUGIN_ROOT}/hooks/python.sh" mailcall say scripts/*) PowerShell(${CLAUDE_PLUGIN_ROOT}/hooks/python.ps1 mailcall say scripts/*) Bash(date*) ToolSearch Read Write
 ---
 
 # Mailcall: connect the mailbox
@@ -11,9 +11,11 @@ allowed-tools: Bash(sh "${CLAUDE_PLUGIN_ROOT}/hooks/python.sh" mailcall say scri
 
 Every script command on this page is written for the **Bash** tool and starts with
 `sh "${CLAUDE_PLUGIN_ROOT}/hooks/python.sh" mailcall say scripts/…`. If your shell tool is **PowerShell** (Windows
-without Git Bash), run the same command with only its start changed: `& "${CLAUDE_PLUGIN_ROOT}/hooks/python.ps1"`
-in place of `sh "${CLAUDE_PLUGIN_ROOT}/hooks/python.sh"`, everything after it unchanged, on one line; text for
-standard input goes in as `@'…'@ | & "${CLAUDE_PLUGIN_ROOT}/hooks/python.ps1" …` instead of `<<'EOF'`.
+without Git Bash), only the start changes: write the launcher's path bare, with no quotes and no `&`
+— `${CLAUDE_PLUGIN_ROOT}/hooks/python.ps1 mailcall say scripts/…` — and keep the rest, on one line; that is the
+form this skill's permission covers. Only if that path has a space in it, write
+`& "${CLAUDE_PLUGIN_ROOT}/hooks/python.ps1" …` instead (the person is then asked once). Text for standard input:
+`@'…'@ | ${CLAUDE_PLUGIN_ROOT}/hooks/python.ps1 …` (`| & "…"` if the path has a space) instead of `<<'EOF'` — also asked once.
 Never call `python3`, `python` or `py` yourself: the launcher finds a real Python 3.8+ (`python`,
 then `py -3`, then `python3`) and never starts the Microsoft Store or Apple stub. If it answers
 with one line saying mailcall "is paused" because this computer has no working Python 3 yet, tell the
