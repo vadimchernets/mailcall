@@ -1,7 +1,7 @@
 {
   "name": "mailcall",
   "description": "Claude reads your mailbox for you and writes the morning summary: what is important, who is waiting for your answer, and a short digest of your Google Alerts and newsletters in your own words. Main road: the Gmail connector of your Claude subscription, no passwords anywhere. Spare road for any mailbox: IMAP strictly read-only, with an app password you type yourself into the system's own keychain, never into a file. Reply drafts only; nothing is sent, deleted or marked without your yes. No keys, no paid API.",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "author": { "name": "Vadym Chernets" },
   "license": "Apache-2.0",
   "keywords": ["email", "gmail", "imap", "digest", "google-alerts", "newsletters", "read-only", "non-programmers"]
