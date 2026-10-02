@@ -1,0 +1,22 @@
+{
+  "title": "Mailcall: Claude reads your mailbox and writes the morning summary",
+  "description": "Mailcall is a Claude Code plugin where Claude reads the person's mailbox and writes a morning summary: what is important, who is waiting for a reply, and a short digest of Google Alerts and newsletters in the person's own words. Main road: the Gmail connector of the person's Claude subscription, no passwords anywhere. Spare road for any mailbox: IMAP strictly read-only, with an app password typed by the person into the system's own keychain, never into a file. Reply drafts only; nothing is sent, deleted or marked without the person's yes. No keys, no paid API.",
+  "creators": [
+    {
+      "name": "Chernets, Vadym"
+    }
+  ],
+  "upload_type": "software",
+  "license": "apache-2.0",
+  "keywords": [
+    "claude-code-plugin",
+    "email",
+    "gmail",
+    "imap",
+    "digest",
+    "google-alerts",
+    "newsletters",
+    "read-only",
+    "non-programmers"
+  ]
+}
