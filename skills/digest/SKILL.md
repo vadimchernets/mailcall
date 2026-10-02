@@ -2,14 +2,26 @@
 name: digest
 description: The morning mail summary - read the person's mailbox (read-only) for the last day and write a short summary file - what is important, who is waiting for an answer and by when, what Google Alerts found about the words the person watches, and newsletters boiled down to one line each or skipped - plus reply drafts on request, never sent. Use when the person says "mail digest", "summarize my inbox", "what's in my mail", "who's waiting for a reply" (or the equivalent in whatever language they are using), or every morning if they asked for that.
 argument-hint: "[days, 1-7] [what matters to you]"
-allowed-tools: Bash(python3 ${CLAUDE_PLUGIN_ROOT}/scripts/*) Bash(py -3 ${CLAUDE_PLUGIN_ROOT}/scripts/*) Bash(python ${CLAUDE_PLUGIN_ROOT}/scripts/*) Bash(date*) ToolSearch Read Write
+allowed-tools: Bash(sh "${CLAUDE_PLUGIN_ROOT}/hooks/python.sh" mailcall say scripts/*) PowerShell(& "${CLAUDE_PLUGIN_ROOT}/hooks/python.ps1" mailcall say scripts/*) Bash(date*) ToolSearch Read Write
 ---
 
 # Mailcall: the morning summary
 
+## Running mailcall's scripts (Mac, Linux, Windows)
+
+Every script command on this page is written for the **Bash** tool and starts with
+`sh "${CLAUDE_PLUGIN_ROOT}/hooks/python.sh" mailcall say scripts/…`. If your shell tool is **PowerShell** (Windows
+without Git Bash), run the same command with only its start changed: `& "${CLAUDE_PLUGIN_ROOT}/hooks/python.ps1"`
+in place of `sh "${CLAUDE_PLUGIN_ROOT}/hooks/python.sh"`, everything after it unchanged, on one line; text for
+standard input goes in as `@'…'@ | & "${CLAUDE_PLUGIN_ROOT}/hooks/python.ps1" …` instead of `<<'EOF'`.
+Never call `python3`, `python` or `py` yourself: the launcher finds a real Python 3.8+ (`python`,
+then `py -3`, then `python3`) and never starts the Microsoft Store or Apple stub. If it answers
+with one line saying mailcall "is paused" because this computer has no working Python 3 yet, tell the
+person that in one plain line and go on by hand — never show them a Python error and stop.
+
 The person said: $ARGUMENTS
 
-Answer in the person's language. The script: `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/mailcall.py"`
+Answer in the person's language. The script: `sh "${CLAUDE_PLUGIN_ROOT}/hooks/python.sh" mailcall say scripts/mailcall.py`
 (below: `mailcall`).
 
 ## The rules you hold (say them once, the first time)

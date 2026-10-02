@@ -2,14 +2,26 @@
 name: watch
 description: Words to watch - the person names what they want to know about (their name, their business, a competitor, a topic), Mailcall helps set up Google Alerts for each word (the person creates them, delivered to their mail or to a feed), then reads the Alerts letters and writes a short digest per word - the few real new mentions with titles, sites and real links taken by code, repeats and noise removed. Use when the person says "watch these words", "digest my alerts", "what are people saying about me" (or the equivalent in whatever language they are using), or after creating Google Alerts in the lesson.
 argument-hint: "[add <words> | list | remove <word> | digest [days]]"
-allowed-tools: Bash(python3 ${CLAUDE_PLUGIN_ROOT}/scripts/*) Bash(py -3 ${CLAUDE_PLUGIN_ROOT}/scripts/*) Bash(python ${CLAUDE_PLUGIN_ROOT}/scripts/*) Bash(date*) ToolSearch Read Write
+allowed-tools: Bash(sh "${CLAUDE_PLUGIN_ROOT}/hooks/python.sh" mailcall say scripts/*) PowerShell(& "${CLAUDE_PLUGIN_ROOT}/hooks/python.ps1" mailcall say scripts/*) Bash(date*) ToolSearch Read Write
 ---
 
 # Mailcall: words to watch
 
+## Running mailcall's scripts (Mac, Linux, Windows)
+
+Every script command on this page is written for the **Bash** tool and starts with
+`sh "${CLAUDE_PLUGIN_ROOT}/hooks/python.sh" mailcall say scripts/…`. If your shell tool is **PowerShell** (Windows
+without Git Bash), run the same command with only its start changed: `& "${CLAUDE_PLUGIN_ROOT}/hooks/python.ps1"`
+in place of `sh "${CLAUDE_PLUGIN_ROOT}/hooks/python.sh"`, everything after it unchanged, on one line; text for
+standard input goes in as `@'…'@ | & "${CLAUDE_PLUGIN_ROOT}/hooks/python.ps1" …` instead of `<<'EOF'`.
+Never call `python3`, `python` or `py` yourself: the launcher finds a real Python 3.8+ (`python`,
+then `py -3`, then `python3`) and never starts the Microsoft Store or Apple stub. If it answers
+with one line saying mailcall "is paused" because this computer has no working Python 3 yet, tell the
+person that in one plain line and go on by hand — never show them a Python error and stop.
+
 The person said: $ARGUMENTS
 
-Answer in the person's language. The script: `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/mailcall.py"`
+Answer in the person's language. The script: `sh "${CLAUDE_PLUGIN_ROOT}/hooks/python.sh" mailcall say scripts/mailcall.py`
 (below: `mailcall`). Google Alerts does the watching on the internet for free; Mailcall reads what
 it sends and makes it short.
 

@@ -2,10 +2,22 @@
 name: setup
 description: Connect the person's mailbox to Claude and prove it works - the Gmail connector of their Claude subscription first (no password anywhere), or, for any other mailbox or when the connector is not there, read-only IMAP with an app password the person types themselves into the system keychain (Keychain on Mac, Credential Manager on Windows, Secret Service on Linux). Ends by showing, in one line, what Claude now really sees, and how to take the access back. Use when the person says "connect my email", "read my inbox", "set up mailcall" (or the equivalent in whatever language they are using), or before the first /mailcall:digest or /mailcall:watch.
 argument-hint: "[your mailbox address]"
-allowed-tools: Bash(python3 ${CLAUDE_PLUGIN_ROOT}/scripts/*) Bash(py -3 ${CLAUDE_PLUGIN_ROOT}/scripts/*) Bash(python ${CLAUDE_PLUGIN_ROOT}/scripts/*) Bash(date*) ToolSearch Read Write
+allowed-tools: Bash(sh "${CLAUDE_PLUGIN_ROOT}/hooks/python.sh" mailcall say scripts/*) PowerShell(& "${CLAUDE_PLUGIN_ROOT}/hooks/python.ps1" mailcall say scripts/*) Bash(date*) ToolSearch Read Write
 ---
 
 # Mailcall: connect the mailbox
+
+## Running mailcall's scripts (Mac, Linux, Windows)
+
+Every script command on this page is written for the **Bash** tool and starts with
+`sh "${CLAUDE_PLUGIN_ROOT}/hooks/python.sh" mailcall say scripts/…`. If your shell tool is **PowerShell** (Windows
+without Git Bash), run the same command with only its start changed: `& "${CLAUDE_PLUGIN_ROOT}/hooks/python.ps1"`
+in place of `sh "${CLAUDE_PLUGIN_ROOT}/hooks/python.sh"`, everything after it unchanged, on one line; text for
+standard input goes in as `@'…'@ | & "${CLAUDE_PLUGIN_ROOT}/hooks/python.ps1" …` instead of `<<'EOF'`.
+Never call `python3`, `python` or `py` yourself: the launcher finds a real Python 3.8+ (`python`,
+then `py -3`, then `python3`) and never starts the Microsoft Store or Apple stub. If it answers
+with one line saying mailcall "is paused" because this computer has no working Python 3 yet, tell the
+person that in one plain line and go on by hand — never show them a Python error and stop.
 
 The person said: $ARGUMENTS
 
@@ -13,8 +25,8 @@ Answer in the person's language, as to someone who is at a computer for the firs
 then wait for their answer. The person signs in and types passwords; you never ask for a password,
 never see one, never write one anywhere.
 
-The script: `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/mailcall.py"` (Windows without `python3`: `py -3`,
-then `python`). Below it is called `mailcall`.
+The script: `sh "${CLAUDE_PLUGIN_ROOT}/hooks/python.sh" mailcall say scripts/mailcall.py` —
+below it is called `mailcall`.
 
 ## 1. Which mailbox, which road
 
