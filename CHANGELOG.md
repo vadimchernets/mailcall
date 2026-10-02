@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.5 — 2026-10-02
+
+- README: install from Poly A1's catalogue by its raw link (`/plugin marketplace add https://raw.githubusercontent.com/vadimchernets/poly-a1-plugins/main/.claude-plugin/marketplace.json`,
+  then `/plugin install mailcall@poly-a1`) - no git needed; the Poly A1 folder is the way without internet,
+  and `marketplace remove` is never the way to switch.
+
 ## 0.1.4 — 2026-10-02
 
 - Every release now carries `mailcall-0.1.4.zip` (one top folder `mailcall-0.1.4/`), built by the new
