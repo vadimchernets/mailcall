@@ -1,5 +1,7 @@
 # Mailcall
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23107727.svg)](https://doi.org/10.5281/zenodo.23107727)
+
 **An agent that reads your mailbox for you — and every morning tells you what matters.**
 
 What is important today, who is waiting for your answer, what the internet wrote about the words
