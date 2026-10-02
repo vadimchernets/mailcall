@@ -1,6 +1,6 @@
 ---
 name: setup
-description: Connect the person's mailbox to Claude and prove it works - the Gmail connector of their Claude subscription first (no password anywhere), or, for any other mailbox or when the connector is not there, read-only IMAP with an app password the person types themselves into the system keychain (Keychain on Mac, Credential Manager on Windows, Secret Service on Linux). Ends by showing, in one line, what Claude now really sees, and how to take the access back. Use when the person says "подключи почту", "чтобы агент читал мой ящик", "настрой mailcall", "connect my email", "read my inbox", or before the first /mailcall:digest or /mailcall:watch.
+description: Connect the person's mailbox to Claude and prove it works - the Gmail connector of their Claude subscription first (no password anywhere), or, for any other mailbox or when the connector is not there, read-only IMAP with an app password the person types themselves into the system keychain (Keychain on Mac, Credential Manager on Windows, Secret Service on Linux). Ends by showing, in one line, what Claude now really sees, and how to take the access back. Use when the person says "connect my email", "read my inbox", "set up mailcall" (or the equivalent in whatever language they are using), or before the first /mailcall:digest or /mailcall:watch.
 argument-hint: "[your mailbox address]"
 allowed-tools: Bash(python3 ${CLAUDE_PLUGIN_ROOT}/scripts/*) Bash(py -3 ${CLAUDE_PLUGIN_ROOT}/scripts/*) Bash(python ${CLAUDE_PLUGIN_ROOT}/scripts/*) Bash(date*) ToolSearch Read Write
 ---
@@ -40,9 +40,9 @@ Ask for the address if it is not in the argument. Then choose the road and say i
 3. Say before the Google screen appears what it will say: the permission is for the whole mailbox,
    not one folder. Mailcall's rule is on top of that: **read only**. Nothing is sent, deleted,
    archived, labelled or marked read by you, today or later.
-4. Prove it: search the last 24 hours and say in ONE line what you now really see — «Вижу ваш
-   ящик: за сутки 23 письма, 9 непрочитанных, 2 письма Google Alerts». Nothing from the letters
-   themselves in this line.
+4. Prove it: search the last 24 hours and say in ONE line what you now really see — "I see your
+   mailbox: 23 letters in the last day, 9 unread, 2 Google Alerts letters." Nothing from the
+   letters themselves in this line.
 5. Save the road: `mailcall config set --user <address> --road connector`.
 
 ## 3. The IMAP road (any mailbox), read-only by the protocol
@@ -54,7 +54,7 @@ Ask for the address if it is not in the argument. Then choose the road and say i
 3. Walk the person through it, one step at a time:
    - Open the app-password page, sign in, make a password named `mailcall`. Gmail makes app
      passwords only when 2-Step Verification is on — if the page says it is not available, the
-     person turns 2-Step Verification on first (same account page, «Безопасность»).
+     person turns 2-Step Verification on first (same account page, "Security").
    - Open their own terminal (Mac: Terminal; Windows: PowerShell; Linux: any terminal) — **not
      this chat** — paste the `store` command, press Enter; the system itself asks for the password;
      they paste the app password there. It goes into the system keychain, not into any file, and
@@ -66,7 +66,7 @@ Ask for the address if it is not in the argument. Then choose the road and say i
    not one of them turned "read". Say the result in one line, as above.
    - `no-password` → the store step did not happen; repeat it.
    - `login-refused` → the app password is wrong or IMAP is off in the mailbox settings (Yandex,
-     Mail.ru: «Почтовые программы» → allow IMAP). Make a new app password.
+     Mail.ru: the "Mail clients" setting → allow IMAP). Make a new app password.
    - `connect-failed` → the server name is wrong; ask for it.
 
 ## 4. Close
@@ -75,7 +75,9 @@ Tell the person three things, short:
 
 - What Claude now sees (the line from step 2.4 or 3.4).
 - The rule: **I only read. Replies are drafts; you send them yourself.** Offer to write this rule
-  into the folder's `CLAUDE.md`: «Почта: только чтение. Черновик — да, отправка — только человеком.»
+  into the folder's `CLAUDE.md`: "Mail: read-only. Drafts yes, sending only by the person."
+
+Reply to the person in their own language even though this file is in English.
 - How to take the access back, in both places:
   - connector: claude.ai → Settings → Connectors → Gmail → Disconnect, **and**
     https://myaccount.google.com/connections (remove Claude there too);

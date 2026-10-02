@@ -4,7 +4,7 @@
 
 - **Connector road:** the Gmail connector the person switched on in their Claude account. The
   skills use only search and read tools; they never call a send, reply, forward, trash, label,
-  spam or filter tool. A Gmail draft is created only after the person's explicit «да» to that.
+  spam or filter tool. A Gmail draft is created only after the person's explicit "yes" to that.
 - **IMAP road:** one TLS connection to the person's mail server, opened read-only (`EXAMINE`,
   `[READ-ONLY]` confirmed), with a whitelist of commands enforced in code before anything is sent.
 - **The app password** is read from the operating system's credential store (macOS Keychain,

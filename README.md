@@ -7,9 +7,9 @@ you watch (your name, your business, your competitor — through Google Alerts),
 boiled down to one line each. Replies come as drafts; you send them yourself.
 
 ```
-/mailcall:setup  anna.petrova@gmail.com
+/mailcall:setup  jane.doe@gmail.com
 /mailcall:digest
-/mailcall:watch add "Анна Петрова" "пекарня Колос"
+/mailcall:watch add "Jane Doe" "Acme Bakery"
 ```
 
 ## Install
@@ -32,8 +32,8 @@ From this folder on its own:
 
 | Skill | What it does |
 |---|---|
-| `/mailcall:setup [address]` | Connects the mailbox and proves it: «Вижу ваш ящик: за сутки 23 письма, 9 непрочитанных». Shows how to take the access back. |
-| `/mailcall:digest [days]` | `Почта-<date>.md`: important · waiting for your answer · your watched words · newsletters in one line · looks like fraud. Drafts on request. |
+| `/mailcall:setup [address]` | Connects the mailbox and proves it: "I see your mailbox: 23 letters in the last day, 9 unread." Shows how to take the access back. |
+| `/mailcall:digest [days]` | `Mail-<date>.md`: important · waiting for your answer · your watched words · newsletters in one line · looks like fraud. Drafts on request. |
 | `/mailcall:watch` | Words to watch: helps you create Google Alerts for them, then reads the Alerts letters and writes a short digest per word with real links. |
 
 ## Two roads, no passwords in files
@@ -68,7 +68,7 @@ address, trackers (`utm_*`, `fbclid`…) cut, Google's own manage/unsubscribe li
 "Alerts" letter that Google's mail server did not vouch for (DMARC/DKIM) gives no links at all.
 The same check runs on both roads: on the Gmail connector road Claude saves the letter as the tool
 returned it and `mailcall letter --file <file>` reads its `Authentication-Results` / `Received` /
-`From`; a letter that comes without headers is marked «не проверено» and gives no links.
+`From`; a letter that comes without headers is marked "unverified" and gives no links.
 
 ## The script on its own
 
@@ -77,7 +77,7 @@ python3 scripts/mailcall.py check --user you@yandex.ru          # sign in, read-
 python3 scripts/mailcall.py fetch --days 1                       # letters as JSON on stdout, nothing on disk
 python3 scripts/mailcall.py alerts --eml letter.eml              # Alerts letter -> news with real links
 python3 scripts/mailcall.py feed --url https://www.google.com/alerts/feeds/...
-python3 scripts/mailcall.py words add "Анна Петрова"
+python3 scripts/mailcall.py words add "Jane Doe"
 ```
 
 Tests (no network, fake letters, a fake IMAP server that records every command):
@@ -85,7 +85,7 @@ Tests (no network, fake letters, a fake IMAP server that records every command):
 
 ## Principles
 
-- Read only. Drafts only. Nothing is sent without your «да» — and even then you press Send.
+- Read only. Drafts only. Nothing is sent without your "yes" — and even then you press Send.
 - No keys, no paid API, nothing bought: your Claude subscription and your own mailbox.
 - The summary file carries who / when / subject / what is asked — not the letters themselves.
 

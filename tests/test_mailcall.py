@@ -116,7 +116,7 @@ def test_connector_letter_forged_alerts_dropped_on_both_roads():
     d = o["letters"][0]
     assert d["sender_auth"] == "fail" and d["alerts_auth"] == "unsigned"
     assert d["alerts_items"] == [] and d["links"] == [] and o["looks_forged"] == 1
-    assert "обман" in d["say"]
+    assert "forgery" in d["say"]
     # the raw source passed as a file: the same verdict
     f = os.path.join(tempfile.mkdtemp(), "letter.eml")
     open(f, "wb").write(b"Received: from evil.example by mx.google.com\r\n" + raw("alerts-forged.eml"))
@@ -129,7 +129,7 @@ def test_connector_letter_without_headers_is_not_checked_and_gives_no_links():
     code, o = run("letter", inp=body)
     d = o["letters"][0]
     assert d["sender_auth"] == "unverified" and d["links"] == [] and o["not_checked"] == 1
-    assert "не проверено" in d["say"]
+    assert "unverified" in d["say"]
     # JSON with only from/subject/snippet (no headers): also not checked, even "from Google Alerts"
     code, o = run("letter", inp=json.dumps({"from": "Google Alerts <googlealerts-noreply@google.com>",
                                              "subject": "Alert", "snippet": body}))
@@ -301,8 +301,8 @@ def test_words_and_config():
     def r(*a):
         p = subprocess.run([sys.executable, SCRIPT, *a], capture_output=True, text=True, env=e)
         return json.loads(p.stdout)
-    assert r("words", "add", "Анна Петрова", "пекарня Колос")["words"][0]["alerts_phrase"] == '"Анна Петрова"'
-    assert len(r("words", "remove", "пекарня Колос")["words"]) == 1
+    assert r("words", "add", "Jane Doe", "Acme Bakery")["words"][0]["alerts_phrase"] == '"Jane Doe"'
+    assert len(r("words", "remove", "Acme Bakery")["words"]) == 1
     assert r("config", "set", "--user", "me@gmail.com")["config"]["host"] == "imap.gmail.com"
     for name in os.listdir(h):
         assert "pass" not in open(os.path.join(h, name), encoding="utf-8").read().lower()

@@ -18,7 +18,7 @@ This script is the spare road and the careful hands:
                              (raw RFC 822, Gmail API JSON with payload.headers / raw, or plain text)
                              -> sender checked by Authentication-Results like on IMAP; links and
                              Alerts items only from letters whose sender is confirmed; a letter
-                             with no headers is "не проверено" and gives no links
+                             with no headers is "unverified" and gives no links
   words  list|add|remove     the person's "words to watch", kept in ~/.mailcall/watch.json
   config show|set            ~/.mailcall/config.json: address, server, road (connector|imap)
 
@@ -121,13 +121,13 @@ def store_commands(user):
     return {
         "Darwin": {"store": 'security add-generic-password -U -s %s -a "%s" -w' % (SERVICE, u),
                    "forget": 'security delete-generic-password -s %s -a "%s"' % (SERVICE, u),
-                   "where": "Keychain Access (Связка ключей), item «%s»" % SERVICE},
+                   "where": "Keychain Access, item \"%s\"" % SERVICE},
         "Linux": {"store": 'secret-tool store --label="mailcall %s" service %s account "%s"' % (u, SERVICE, u),
                   "forget": 'secret-tool clear service %s account "%s"' % (SERVICE, u),
-                  "where": "GNOME Keyring / KWallet (Secret Service), label «mailcall %s»" % u},
+                  "where": "GNOME Keyring / KWallet (Secret Service), label \"mailcall %s\"" % u},
         "Windows": {"store": 'cmdkey /generic:%s /user:"%s" /pass' % (target(u), u),
                     "forget": "cmdkey /delete:%s" % target(u),
-                    "where": "Credential Manager -> Windows Credentials, «%s»" % target(u)},
+                    "where": "Credential Manager -> Windows Credentials, \"%s\"" % target(u)},
     }.get(platform.system(), {})
 
 
@@ -358,8 +358,8 @@ def body_links(plain, rich):
     return out_[:MAX_ITEMS]
 
 
-SAY = {"pass": "отправитель подтверждён", "fail": "Похоже на обман: отправитель не подтверждён",
-       "unverified": "не проверено: коннектор не отдал заголовки, ссылки не берём"}
+SAY = {"pass": "sender confirmed", "fail": "Looks like forgery: sender not confirmed",
+       "unverified": "unverified: the connector did not hand over headers, links withheld"}
 
 
 def check_letter(raw, uid=None):
@@ -469,7 +469,7 @@ def letters_from_text(text):
         return found
     if re.match(r"^[\x21-\x39\x3b-\x7e]+:", t):
         return [t.encode("utf-8")]          # raw RFC 822 source
-    # only the body text: no headers to check; the letter is "не проверено"
+    # only the body text: no headers to check; the letter is "unverified"
     return [("Content-Type: text/plain; charset=utf-8\r\n\r\n" + t).encode("utf-8")] if t.strip() else []
 
 
