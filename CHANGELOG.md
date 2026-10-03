@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.1 — 2026-10-03
+
+- **Wording: no disclaimers.** Mailcall says what works as a capability: the README's "Good to know" leads with
+  the road that brings each mailbox in (Outlook.com through the feed or a Gmail forward, renamed connector tools
+  found by search, company mail on whichever road the administrator allows); a feed address that is not Google's
+  gets "give the Google Alerts feed address" in all five languages; the launcher's no-Python line says Mailcall
+  starts the moment Python 3 is there. New `tests/test_no_disclaimers.py` keeps stop phrases (own risk, not legal
+  advice, for now, unfortunately, honestly, sorry and their Russian and Ukrainian twins) out of every text a
+  person or the model reads.
+
 ## 0.2.0 — 2026-10-03
 
 - Five languages. Every sentence `scripts/mailcall.py` hands to the person - the `say` of a sender check

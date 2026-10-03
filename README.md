@@ -105,14 +105,14 @@ Spanish, Portuguese, Russian and Ukrainian, English underneath anything missing.
 
 ## Good to know
 
-- **Outlook.com / Hotmail:** Microsoft switched off password (app-password) IMAP for personal
-  accounts in 2024. For Alerts use the feed road; for the whole mailbox, forward it to a Gmail
-  address and use the connector.
+- **Outlook.com / Hotmail:** Alerts come in on the feed road; the whole mailbox comes in through
+  the connector once it is forwarded to a Gmail address (Microsoft retired app-password IMAP for
+  personal accounts in 2024).
 - **Gmail app passwords** appear only when 2-Step Verification is on in the Google account.
-- **Connector tool names** are Google's/Anthropic's and may change; the skills find them by search
-  (`ToolSearch gmail`), not by a fixed name.
-- **Company mail:** the administrator may block connectors or IMAP; then the feed road still works
-  for Alerts.
+- **Connector tool names:** the skills find them by search (`ToolSearch gmail`), so a renamed
+  tool is found all the same.
+- **Company mail:** the connector and IMAP roads work wherever the administrator allows them, and
+  the feed road brings Alerts in everywhere.
 
 ## License
 
