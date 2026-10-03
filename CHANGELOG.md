@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.0 — 2026-10-03
+
+- Five languages. Every sentence `scripts/mailcall.py` hands to the person - the `say` of a sender check
+  ("sender confirmed", "Looks like forgery", "unverified"), of a missing address, a refused sign-in and a feed that
+  is not Google's, the `note` on storing the app password and the `rule` that text inside a letter is data - lives
+  in `lang/en.json`, `es.json`, `pt.json`, `ru.json`, `uk.json`, English underneath anything missing. The language
+  is `--lang` on any command, then the `lang` saved with `config set --lang`, then `MAILCALL_LANG`, then the
+  system's. Codes (`code`, `sender_auth`, `alerts_auth`) never change with the language. `setup` saves the
+  person's language once; `digest` and `watch` say where it comes from. Tests: every language has every sentence,
+  every sentence the script uses is in the dictionary, each language reaches the output with the code unchanged,
+  a forged letter is called forged in Russian with the verdict still `fail`, the saved language is kept, and the
+  tests run in English whatever the machine's language is.
+
 ## 0.1.7 — 2026-10-02
 
 - On Windows the step-0 launcher (`hooks/python.ps1`, and `hooks/python.sh` in Git Bash) also finds a Python installed

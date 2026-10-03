@@ -30,6 +30,10 @@ never see one, never write one anywhere.
 The script: `sh "${CLAUDE_PLUGIN_ROOT}/hooks/python.sh" mailcall say scripts/mailcall.py` —
 below it is called `mailcall`.
 
+Save the person's language once, at the start, so that the sentences the script hands them come in it:
+`mailcall config set --lang <code>` - `en`, `es`, `pt`, `ru` or `uk`; for any other language leave it out and
+translate those few sentences yourself.
+
 ## 1. Which mailbox, which road
 
 Ask for the address if it is not in the argument. Then choose the road and say it in one line:

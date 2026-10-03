@@ -8,6 +8,7 @@ the wire (EXAMINE, BODY.PEEK) and what never does (SELECT, STORE, plain BODY[]).
 import imaplib
 import json
 import os
+import re
 import socket
 import subprocess
 import sys
@@ -30,6 +31,7 @@ def raw(name):
 def run(*args, env=None, inp=None):
     e = dict(os.environ)
     e["MAILCALL_HOME"] = tempfile.mkdtemp()
+    e["MAILCALL_LANG"] = "en"  # English unless a test asks otherwise, whatever the machine's language
     e.update(env or {})
     r = subprocess.run([sys.executable, SCRIPT, *args], capture_output=True, text=True, env=e, input=inp, timeout=60)
     return r.returncode, json.loads(r.stdout) if r.stdout.strip() else None
@@ -315,6 +317,54 @@ def test_plugin_files():
         t = open(os.path.join(ROOT, "skills", s, "SKILL.md"), encoding="utf-8").read()
         assert t.startswith("---\nname: %s\n" % s)
         assert "send" in t.lower()   # every skill carries the "never send" rule
+
+
+# ------------------------------------------------------------------ five languages
+
+LANGS = ("en", "es", "pt", "ru", "uk")
+
+
+def lang_file(code):
+    with open(os.path.join(ROOT, "lang", code + ".json"), encoding="utf-8") as f:
+        return json.load(f)
+
+
+def test_every_language_has_every_sentence():
+    keys = {k for k in lang_file("en") if not k.startswith("_")}
+    for code in LANGS:
+        assert {k for k in lang_file(code) if not k.startswith("_")} == keys, code
+
+
+def test_every_sentence_the_script_hands_over_is_in_the_dictionary():
+    text = open(SCRIPT, encoding="utf-8").read()
+    used = set(re.findall(r'(?<![\w.])t\("(\w+)"\)', text)) | set(re.findall(r'"(say_sender_\w+)"', text))
+    assert used and used <= set(lang_file("en")), used - set(lang_file("en"))
+
+
+def test_the_person_is_answered_in_their_language_and_the_code_stays():
+    for code in LANGS:
+        rc, d = run("where", "--lang", code)
+        assert rc == 2 and d["code"] == "no-user"
+        assert d["say"] == lang_file(code)["say_no_user"], code
+
+
+def test_a_forged_letter_is_called_forged_in_russian_and_the_verdict_stays():
+    forged = _gmail_json("alerts-forged.eml")
+    forged["payload"]["headers"].insert(0, {"name": "Received", "value": "from evil.example by mx.google.com"})
+    rc, d = run("letter", "--lang", "ru", inp=json.dumps({"messages": [forged]}))
+    letter = d["letters"][0]
+    assert letter["sender_auth"] == "fail"
+    assert letter["say"] == lang_file("ru")["say_sender_fail"]
+
+
+def test_the_language_set_once_in_config_is_kept():
+    h = tempfile.mkdtemp()
+    e = dict(os.environ, MAILCALL_HOME=h, MAILCALL_LANG="en")
+    def r(*a):
+        return json.loads(subprocess.run([sys.executable, SCRIPT, *a], capture_output=True, text=True,
+                                         env=e).stdout)
+    assert r("config", "set", "--lang", "pt")["config"]["lang"] == "pt"
+    assert r("where")["say"] == lang_file("pt")["say_no_user"]
 
 
 if __name__ == "__main__":

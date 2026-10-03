@@ -27,6 +27,10 @@ Answer in the person's language. The script: `sh "${CLAUDE_PLUGIN_ROOT}/hooks/py
 (below: `mailcall`). Google Alerts does the watching on the internet for free; Mailcall reads what
 it sends and makes it short.
 
+The script hands the person some sentences of its own (`say`, `note`, `rule`); they come in the language saved
+with `mailcall config set --lang <code>` (en, es, pt, ru, uk), or pass `--lang <code>` to any command. Codes such
+as `sender_auth` and `code` stay the same in every language.
+
 ## 1. The words (`add`, `list`, `remove`, or no argument the first time)
 
 `mailcall words list`. If empty, ask for up to five: the person's name with surname, the business,

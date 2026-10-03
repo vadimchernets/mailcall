@@ -97,6 +97,12 @@ Tests (no network, fake letters, a fake IMAP server that records every command):
 - No keys, no paid API, nothing bought: your Claude subscription and your own mailbox.
 - The summary file carries who / when / subject / what is asked — not the letters themselves.
 
+## Languages
+
+The few sentences the script hands to the person (`say`, `note`, `rule`) live in `lang/<code>.json`: English,
+Spanish, Portuguese, Russian and Ukrainian, English underneath anything missing. The language is `--lang`, then
+`config set --lang`, then `MAILCALL_LANG`, then the system's. Codes such as `sender_auth` never change with it.
+
 ## Good to know
 
 - **Outlook.com / Hotmail:** Microsoft switched off password (app-password) IMAP for personal

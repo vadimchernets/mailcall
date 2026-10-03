@@ -26,6 +26,10 @@ The person said: $ARGUMENTS
 Answer in the person's language. The script: `sh "${CLAUDE_PLUGIN_ROOT}/hooks/python.sh" mailcall say scripts/mailcall.py`
 (below: `mailcall`).
 
+The script hands the person some sentences of its own (`say`, `note`, `rule`); they come in the language saved
+with `mailcall config set --lang <code>` (en, es, pt, ru, uk), or pass `--lang <code>` to any command. Codes such
+as `sender_auth` and `code` stay the same in every language.
+
 ## The rules you hold (say them once, the first time)
 
 - **Read only.** You never send, reply, forward, delete, archive, label, mark read or move a letter,
