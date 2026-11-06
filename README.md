@@ -1,5 +1,7 @@
 # Mailcall
 
+> Poly helped? [Give it a star on GitHub](https://github.com/vadimchernets/mailcall) - one click. The plugin is open to everyone either way.
+
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23107727.svg)](https://doi.org/10.5281/zenodo.23107727)
 
 **An agent that reads your mailbox for you — and every morning tells you what matters.**
